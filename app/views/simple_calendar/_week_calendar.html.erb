@@ -8,13 +8,18 @@
 
   <table class="table table-bordered">
     <thead>
+        <tr>
+        
+        </tr>
       <tr>
+          <th></th>
         <% date_range.slice(0, 7).each do |day| %>
           <th><%= t('date.abbr_day_names')[day.wday] %></th>
         <% end %>
           
         <% date_range.each_slice(7) do |week| %>
           <tr>
+              <th></th>
             <% week.each do |day| %>
             <%= content_tag :td, class: calendar.td_classes_for(day) do %>
               <% if defined?(Haml) && respond_to?(:block_is_haml?) && block_is_haml?(block) %>
@@ -31,15 +36,46 @@
     </thead>
 
     <tbody>
-       
-        <% for i in 0..23 %>
+        <% for i in 0..10 %>
           <tr>
-            <% for j in 0..6 %>
-              <td><center><%=hours[i]%></center></td>
+              <td ><center><%=hours[i]%></center></td>
+          </tr>
               
-            <% end %>
+          <tr>
+          <% date_range.each_slice(7) do |week| %>
+              <th></th>
+            <% week.each do |day| %>
+              <% flag = false %>
+              <% CalendarEvent.where(host: current_user.email).find_each do |event| %>
+                  <% if day.day.to_i == event.day.to_i  %> 
+                    <% if event.meridiem == "AM" %>
+                      <% if i+8 == event.hour.to_i %>
+                        <td><%= event.name %></td>
+                        <% flag = true %>
+                      <% end %>
+                    <% elsif event.meridiem == "PM" && event.hour == "12"%>
+                      <% if i+8 == event.hour.to_i %>
+                        <td><%= event.name %></td>
+                        <% flag = true %>
+                      <% end %>
+                    <% else %>
+                      <% if i+8 == event.hour.to_i + 12 %>
+                        <td><%= event.name %></td>
+                        <% flag = true %>
+                      <% end %>
+                    <% end %>
+                  <% end %>
+              
+            
+              <% end %>
+              <% if flag == false %>
+                <td></td>
+              <% end %>
+          <% end %>
+            
           </tr>
         <% end %>
+      <% end %>
     </tbody>
       
   </table>
