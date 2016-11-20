@@ -36,39 +36,26 @@
     </thead>
 
     <tbody>
+        
+        <% event_list = CalendarEvent.where(host: current_user.email).find_each %>
+        
         <% for i in 0..10 %>
           <tr>
               <td ><center><%=hours[i]%></center></td>
           </tr>
-              
+        
           <tr>
           <% date_range.each_slice(7) do |week| %>
               <th></th>
             <% week.each do |day| %>
-              <% flag = false %>
-              <% CalendarEvent.where(host: current_user.email).find_each do |event| %>
-                  <% if day.day.to_i == event.day.to_i  %> 
-                    <% if event.meridiem == "AM" %>
-                      <% if i+8 == event.hour.to_i %>
-                        <td><%= event.name %></td>
-                        <% flag = true %>
-                      <% end %>
-                    <% elsif event.meridiem == "PM" && event.hour == "12"%>
-                      <% if i+8 == event.hour.to_i %>
-                        <td><%= event.name %></td>
-                        <% flag = true %>
-                      <% end %>
-                    <% else %>
-                      <% if i+8 == event.hour.to_i + 12 %>
-                        <td><%= event.name %></td>
-                        <% flag = true %>
-                      <% end %>
-                    <% end %>
+              <% result = "" %>
+              <% event_list.each do |event| %>
+                  <% result = event.print_event(day.day.to_i,i+8,event) %>
+                  <% if result != "" %>
+              <td><button><%= link_to result, edit_calendar_event_path(event.id) %></button></td>
                   <% end %>
-              
-            
               <% end %>
-              <% if flag == false %>
+              <% if result == "" %>
                 <td></td>
               <% end %>
           <% end %>
