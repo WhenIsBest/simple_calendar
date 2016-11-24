@@ -44,7 +44,7 @@ module SimpleCalendar
     end
 
     def td_classes_for(day)
-      today = Date.current
+      today = Time.zone.now.to_date
 
       td_class = ['day']
       td_class << "wday-#{day.wday.to_s}"
