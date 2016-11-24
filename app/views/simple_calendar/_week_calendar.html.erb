@@ -35,9 +35,8 @@
       </tr>
     </thead>
 
-    <tbody>
-        
-        <% event_list = CalendarEvent.where(host: current_user.email).find_each %>
+    <tbody> 
+        <% event_list = CalendarEvent.where(host: current_user.id).find_each %>
         
         <% for i in 0..10 %>
           <tr>
