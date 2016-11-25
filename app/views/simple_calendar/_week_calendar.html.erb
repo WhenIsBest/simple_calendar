@@ -37,7 +37,6 @@
 
     <tbody> 
         <% event_list = CalendarEvent.where(host: current_user.id).find_each %>
-        
         <% for i in 0..10 %>
           <tr>
               <td ><center><%=hours[i]%></center></td>
@@ -49,9 +48,11 @@
             <% week.each do |day| %>
               <% result = "" %>
               <% event_list.each do |event| %>
-                  <% result = event.print_event(day.day.to_i,i+8,event) %>
-                  <% if result != "" %>
-              <td><button><%= link_to result, edit_calendar_event_path(event.id) %></button></td>
+                  <% if day.month == event.get_month(event.month)  && day.year == event.year.to_i%>
+                      <% result = event.print_event(day.day.to_i,i+8,event) %>
+                      <% if result != "" %>
+                        <td><button><%= link_to result, edit_calendar_event_path(event.id) %></button></td>
+                      <% end %>
                   <% end %>
               <% end %>
               <% if result == "" %>
