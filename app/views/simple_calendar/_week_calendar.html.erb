@@ -1,4 +1,5 @@
 <div class="simple-calendar">
+    
   <div class="calendar-heading">
       <button><%= link_to t('simple_calendar.previous', default: 'Previous Week'), calendar.url_for_previous_view %></button>
       <span class="calendar-title">Week of <%= date_range.first.strftime("%m/%d/%Y") %> - <%= date_range.last.strftime("%m/%d/%Y") %></span>
@@ -7,44 +8,55 @@
   </div>
 
   <table class="table table-bordered">
+      
     <thead>
+        
+<!--
         <tr>
-        
         </tr>
-      <tr>
-          <th></th>
-        <% date_range.slice(0, 7).each do |day| %>
-          <th><%= t('date.abbr_day_names')[day.wday] %></th>
-        <% end %>
-          
-        <% date_range.each_slice(7) do |week| %>
-          <tr>
-              <th></th>
-            <% week.each do |day| %>
-            <%= content_tag :td, class: calendar.td_classes_for(day) do %>
-              <% if defined?(Haml) && respond_to?(:block_is_haml?) && block_is_haml?(block) %>
-                <% capture_haml(day, sorted_events.fetch(day, []), &block) %>
-              <% else %>
-                <% block.call day, sorted_events.fetch(day, []) %>
-              <% end %>
+-->
+      
+        <tr>
+            
+            <th></th>
+
+            <% date_range.slice(0, 7).each do |day| %>
+              <th><%= t('date.abbr_day_names')[day.wday] %></th>
             <% end %>
-          <% end %>
-        </tr>
+
+            <% date_range.each_slice(7) do |week| %>
+
+                <tr class="date-header-row">
+
+                    <th></th>
+                    <% week.each do |day| %>
+                    
+                        <%= content_tag :td, class: calendar.td_classes_for(day) do %>
+                          <% if defined?(Haml) && respond_to?(:block_is_haml?) && block_is_haml?(block) %>
+                            <% capture_haml(day, sorted_events.fetch(day, []), &block) %>
+                          <% else %>
+                            <% block.call day, sorted_events.fetch(day, []) %>
+                          <% end %>
+                        <% end %>
+                      <% end %>
+
+                </tr>
+
+            <% end %>
         
-      <% end %>
-      </tr>
+        </tr>
+      
     </thead>
 
-    <tbody> 
-        <% event_list = CalendarEvent.where(host: current_user.id).find_each %>
+    <tbody>
+        
+        <% event_list = CalendarEvent.where(host: current_user.email).find_each %>
+        
         <% for i in 0..10 %>
-          <tr>
-              <td ><center><%=hours[i]%></center></td>
-          </tr>
         
           <tr>
           <% date_range.each_slice(7) do |week| %>
-              <th></th>
+              <td ><center><%=hours[i]%></center></td>
             <% week.each do |day| %>
               <% result = "" %>
               <% event_list.each do |event| %>
@@ -61,7 +73,17 @@
           <% end %>
             
           </tr>
+        
+            <tr>
+                  <td></td>
+                  <% for j in 0..6 %>
+                    <td></td>
+                  <% end %>
+            </tr>
+        
+        
         <% end %>
+        
       <% end %>
     </tbody>
       
