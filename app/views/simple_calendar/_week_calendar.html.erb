@@ -96,21 +96,33 @@
               <% end %>
               <% if result == "" %>
                 <% found_events = [] %>
-                <% if !homepage %>
-                  <% id_list.each do |member_id| %>
-              
-                    <% events_today = CalendarEvent.where(["year = ? and month = ? and day = ? and host = ?",day.year.to_s, get_month(day.month.to_i),day.day.to_s,member_id]).find_each %>
-              
-                    <% events_today.each do |event| %>
-                      <% found_events.push(event) %>
-                    <% end %>
+                <% if homepage %>
+                  <% id_list = [current_user.id] %>
+                <% end %>
+                
+                <% id_list.each do |member_id| %>
+
+                  <% events_today = CalendarEvent.where(["year = ? and month = ? and day = ? and host = ?",day.year.to_s, get_month(day.month.to_i),day.day.to_s,member_id]).find_each %>
+
+                  <% events_today.each do |event| %>
+                    <% found_events.push(event) %>
                   <% end %>
-              
-                  <% time_range = get_time_range(found_events) %>
                 <% end %>
 
+                <% time_range = get_time_range(found_events) %>
+
                 <% if homepage %>
-                  <td></td>
+                  <% if i >= time_range.first && i < time_range.last %>
+                    <td class="taken"></td>
+                  <% elsif time_range.first == time_range.last && time_range.first == 0 %>
+                    <td class="taken"></td>
+                  <% elsif i >= time_range.first && time_range.last==23 %>
+                    <td class="taken"></td>
+                  <% elsif time_range.first == -1 && time_range.last == -1 %>
+                    <td></td>
+                  <% else %>
+                    <td></td>
+                  <% end %>
                 <% elsif i >= time_range.first && i < time_range.last %>
                   <td></td>
                 <% elsif time_range.first == time_range.last && time_range.first == 0 %>
