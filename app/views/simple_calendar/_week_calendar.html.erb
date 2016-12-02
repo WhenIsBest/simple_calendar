@@ -68,19 +68,18 @@
               <% end %>
            <% end %>
            
-           
         <% end %>
             
         
         <% for i in 0..23 %>
-          
+          <% time_range = [0,23] %>
           <tr>
           <% date_range.each_slice(7) do |week| %>
               <td ><center><%=hours[i]%></center></td>
             <% week.each do |day| %>
               <% result = "" %>
               <% event_list.each do |event| %>
-                  <% if day.month == event.get_month(event.month)  && day.year == event.year.to_i%>
+                  <% if day.month == get_month(event.month)  && day.year == event.year.to_i%>
                       <% result = event.print_event(day.day.to_i,i,event) %>
                       <% if result != "" %>
                         <% if homepage %>
@@ -95,8 +94,30 @@
                   
               <% end %>
               <% if result == "" %>
+                <% found_events = [] %>
+                <% if !homepage %>
+                  <% id_list.each do |member_id| %>
+              
+                    <% events_today = CalendarEvent.where(["year = ? and month = ? and day = ? and host = ?",day.year.to_s, get_month(day.month.to_i),day.day.to_s,member_id]).find_each %>
+              
+                    <% events_today.each do |event| %>
+                      <% found_events.push(event) %>
+                    <% end %>
+                  <% end %>
+              
+                  <% time_range = get_time_range(found_events) %>
+                <% end %>
+
                 <% if homepage %>
                   <td></td>
+                <% elsif i >= time_range.first && i < time_range.last %>
+                  <td></td>
+                <% elsif time_range.first == time_range.last && time_range.first == 0 %>
+                  <td></td>
+                <% elsif i >= time_range.first && time_range.last==23 %>
+                  <td></td>
+                <% elsif time_range.first == -1 && time_range.last == -1 %>
+                  <td><button></button></td>
                 <% else %>
                   <td><button></button></td>
                 <% end %>
