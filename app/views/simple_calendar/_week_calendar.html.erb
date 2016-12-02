@@ -67,6 +67,8 @@
                 <% event_list.push(event) %>
               <% end %>
            <% end %>
+        
+           <% group_event_list = CalendarEvent.where(group: current_group.id).find_each %>
            
         <% end %>
             
@@ -91,7 +93,6 @@
                         <% break %>
                       <% end %>
                   <% end %>
-                  
               <% end %>
               <% if result == "" %>
                 <% found_events = [] %>
