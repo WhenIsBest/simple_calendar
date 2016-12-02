@@ -49,11 +49,31 @@
     </thead>
 
     <tbody>
+        <% homepage = request.original_url.include? "welcome/homepage" %>
         
-        <% event_list = CalendarEvent.where(host: current_user.email).find_each %>
+        <% if homepage %>
+            <% event_list = CalendarEvent.where(host: current_user.id).find_each %>
+        <% else %>
+            <% event_list = [] %>
+            <% id_list = [current_user.id] %>
         
-        <% for i in 0..10 %>
+            <% current_group.group_members.each do |member| %>
+              <% id_list.push(member.id) %>
+            <% end %>
+            
+            <% id_list.each do |member_id| %>
+              <% member_events = CalendarEvent.where(host: member_id).find_each %>
+              <% member_events.each do |event| %>
+                <% event_list.push(event) %>
+              <% end %>
+           <% end %>
+           
+           
+        <% end %>
+            
         
+        <% for i in 0..23 %>
+          
           <tr>
           <% date_range.each_slice(7) do |week| %>
               <td ><center><%=hours[i]%></center></td>
@@ -61,14 +81,25 @@
               <% result = "" %>
               <% event_list.each do |event| %>
                   <% if day.month == event.get_month(event.month)  && day.year == event.year.to_i%>
-                      <% result = event.print_event(day.day.to_i,i+8,event) %>
+                      <% result = event.print_event(day.day.to_i,i,event) %>
                       <% if result != "" %>
-                        <td><button><%= link_to result, edit_calendar_event_path(event.id) %></button></td>
+                        <% if homepage %>
+                          <td><button><%= link_to result, edit_calendar_event_path(event.id) %></button></td>
+                        <% else %>
+                          <td></td>
+                        <% end %>
+              
+                        <% break %>
                       <% end %>
                   <% end %>
+                  
               <% end %>
               <% if result == "" %>
-                <td></td>
+                <% if homepage %>
+                  <td></td>
+                <% else %>
+                  <td><button></button></td>
+                <% end %>
               <% end %>
           <% end %>
             
