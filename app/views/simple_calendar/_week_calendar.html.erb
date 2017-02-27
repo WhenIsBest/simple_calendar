@@ -58,7 +58,7 @@
             <% id_list = [current_user.id] %>
         
             <% current_group.group_members.each do |member| %>
-              <% id_list.push(member.id) %>
+              <% id_list.push(member) %>
             <% end %>
             
             <% id_list.each do |member_id| %>
