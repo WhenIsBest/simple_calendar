@@ -1,9 +1,9 @@
 <div class="simple-calendar">
     
   <div class="calendar-heading">
-      <button><%= link_to t('simple_calendar.previous', default: 'Previous Week'), calendar.url_for_previous_view %></button>
+      <button id="white-button"><%= link_to t('simple_calendar.previous', default: 'Previous Week'), calendar.url_for_previous_view %></button>
       <span class="calendar-title">Week of <%= date_range.first.strftime("%m/%d/%Y") %> - <%= date_range.last.strftime("%m/%d/%Y") %></span>
-      <button><%= link_to t('simple_calendar.next', default: 'Next Week'), calendar.url_for_next_view %></button> 
+      <button id="white-button"><%= link_to t('simple_calendar.next', default: 'Next Week'), calendar.url_for_next_view %></button> 
       <p> </p>
   </div>
 
@@ -85,9 +85,9 @@
                       <% result = event.print_event(day.day.to_i,i,event) %>
                       <% if result != "" %>
                         <% if homepage %>
-                          <td><button><%= link_to result, edit_calendar_event_path(event.id) %></button></td>
+                          <td style="background-color: #c9dbe8;"><%= link_to result, edit_calendar_event_path(event.id) %></td>
                         <% else %>
-                          <td></td>
+                          <td id="not-available"></td>
                         <% end %>
               
                         <% break %>
@@ -112,6 +112,7 @@
                 <% time_range = get_time_range(found_events) %>
 
                 <% if homepage %>
+              
                   <% if i >= time_range.first && i < time_range.last %>
                     <td class="taken"></td>
                   <% elsif time_range.first == time_range.last && time_range.first == 0 %>
@@ -123,28 +124,35 @@
                   <% else %>
                     <td></td>
                   <% end %>
+              
                 <% elsif i >= time_range.first && i < time_range.last %>
-                  <td></td>
+                  <td id="not-available"></td>
                 <% elsif time_range.first == time_range.last && time_range.first == 0 %>
-                  <td></td>
+                  <td>not available 3</td>
                 <% elsif i >= time_range.first && time_range.last==23 %>
-                  <td></td>
+                  <td id="not-available"></td>
                 <% elsif time_range.first == -1 && time_range.last == -1 %>
-                  <td><button></button></td>
+                  <td id="available">
+<!--                      <button></button>-->
+                  </td>
                 <% else %>
-                  <td><button></button></td>
+                  <td id="available">
+<!--                      <button></button>-->
+                  </td>
                 <% end %>
               <% end %>
           <% end %>
             
           </tr>
         
+<!--
             <tr>
                   <td></td>
                   <% for j in 0..6 %>
                     <td></td>
                   <% end %>
             </tr>
+-->
         
         
         <% end %>
