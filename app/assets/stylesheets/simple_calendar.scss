@@ -1,8 +1,9 @@
 .simple-calendar {
     
-    height: 565px;
+    height: 100%;
     overflow-y: scroll;
-    
+    margin: 0px;
+    padding: 0px;
     
     table {
         -webkit-border-horizontal-spacing: 0px;
@@ -22,9 +23,15 @@
     .date-header-row {
         color:darkgoldenrod;
     }
+    
+    .calendar-heading {
+        //padding-left: 10px;
+        text-align: center;
+        padding-top: 10px;
+    }
 
     th {
-        padding: 6px;
+        padding: 4px;
         border-bottom: 2px solid rgb(221, 221, 221);
         border-collapse: collapse;
         border-left: 1px solid rgb(221, 221, 221);
@@ -53,6 +60,18 @@
         border-left-color: rgb(221, 221, 221);
         border-left-style: solid;
         border-left-width: 1px;
+    }
+    
+    #available {
+        background-color: #c4ffc1;
+    }
+    
+    #not-available {
+        background-color: #ffa993;
+    }
+    
+    .taken {
+        background-color: #c9dbe8;
     }
 
     .day {
