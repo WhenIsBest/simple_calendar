@@ -1,9 +1,9 @@
 <div class="simple-calendar">
     
   <div class="calendar-heading">
-      <button id="white-button"><%= link_to t('simple_calendar.previous', default: 'Previous Week'), calendar.url_for_previous_view %></button>
+      <button><%= link_to t('simple_calendar.previous', default: 'Previous Week'), calendar.url_for_previous_view %></button>
       <span class="calendar-title">Week of <%= date_range.first.strftime("%m/%d/%Y") %> - <%= date_range.last.strftime("%m/%d/%Y") %></span>
-      <button id="white-button"><%= link_to t('simple_calendar.next', default: 'Next Week'), calendar.url_for_next_view %></button> 
+      <button><%= link_to t('simple_calendar.next', default: 'Next Week'), calendar.url_for_next_view %></button> 
       <p> </p>
   </div>
 
@@ -57,18 +57,28 @@
             <% event_list = [] %>
             <% id_list = [current_user.id] %>
         
-            <% current_group.group_members.each do |member| %>
-              <% id_list.push(member) %>
-            <% end %>
+           <% if current_group == nil %>
+             current_group is nil.
+             Here are the group ids for the current user: <%= current_user.group_ids %>
+           <% else %>
+             <% if current_group.group_members != nil %>
+                <% current_group.group_members.each do |member| %>
+                  <% id_list.push(member) %>
+                <% end %>
             
-            <% id_list.each do |member_id| %>
-              <% member_events = CalendarEvent.where(host: member_id).find_each %>
-              <% member_events.each do |event| %>
-                <% event_list.push(event) %>
-              <% end %>
-           <% end %>
+            
+                <% id_list.each do |member_id| %>
+                  <% member_events = CalendarEvent.where(host: member_id).find_each %>
+                  <% member_events.each do |event| %>
+                    <% event_list.push(event) %>
+                  <% end %>
+                <% end %>
+             <% end %>
         
-           <% group_event_list = CalendarEvent.where(group: current_group.id).find_each %>
+             <% group_event_list = CalendarEvent.where(group: current_group.id).find_each %>
+           <% end %>
+            
+           
            
         <% end %>
             
@@ -85,9 +95,9 @@
                       <% result = event.print_event(day.day.to_i,i,event) %>
                       <% if result != "" %>
                         <% if homepage %>
-                          <td style="background-color: #c9dbe8;"><%= link_to result, edit_calendar_event_path(event.id) %></td>
+                          <td><button><%= link_to result, edit_calendar_event_path(event.id) %></button></td>
                         <% else %>
-                          <td id="not-available"></td>
+                          <td></td>
                         <% end %>
               
                         <% break %>
@@ -112,7 +122,6 @@
                 <% time_range = get_time_range(found_events) %>
 
                 <% if homepage %>
-              
                   <% if i >= time_range.first && i < time_range.last %>
                     <td class="taken"></td>
                   <% elsif time_range.first == time_range.last && time_range.first == 0 %>
@@ -124,35 +133,28 @@
                   <% else %>
                     <td></td>
                   <% end %>
-              
                 <% elsif i >= time_range.first && i < time_range.last %>
-                  <td id="not-available"></td>
+                  <td></td>
                 <% elsif time_range.first == time_range.last && time_range.first == 0 %>
-                  <td>not available 3</td>
+                  <td></td>
                 <% elsif i >= time_range.first && time_range.last==23 %>
-                  <td id="not-available"></td>
+                  <td></td>
                 <% elsif time_range.first == -1 && time_range.last == -1 %>
-                  <td id="available">
-<!--                      <button></button>-->
-                  </td>
+                  <td><button></button></td>
                 <% else %>
-                  <td id="available">
-<!--                      <button></button>-->
-                  </td>
+                  <td><button></button></td>
                 <% end %>
               <% end %>
           <% end %>
             
           </tr>
         
-<!--
             <tr>
                   <td></td>
                   <% for j in 0..6 %>
                     <td></td>
                   <% end %>
             </tr>
--->
         
         
         <% end %>
