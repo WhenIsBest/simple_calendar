@@ -49,10 +49,26 @@
     </thead>
 
     <tbody>
+        <% require 'set' %>
         <% homepage = request.original_url.include? "welcome/homepage" %>
         
         <% if homepage %>
-            <% event_list = CalendarEvent.where(host: current_user.id).find_each %>
+            <% event_set = CalendarEvent.where(host: current_user.id).find_each.to_set %>
+        
+            <% group_event_set = Set.new %>
+            <% current_user.group_ids.each do |group_id| %>
+              <% if group_id == nil %>
+                <% next %>
+              <% end %>
+              <% group_events = CalendarEvent.where(group: group_id).find_each %>
+              <% group_events.each do |group_event| %>
+                <%= group_event.group %>
+                <% group_event_set.add(group_event) %>
+              <% end %>
+            <% end %>
+        
+            <% event_set.merge(group_event_set) %>
+            <% event_list = event_set.to_a %>
         <% else %>
             <% event_list = [] %>
             <% id_list = [current_user.id] %>
