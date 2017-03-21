@@ -1,192 +1,33 @@
 <div class="simple-calendar">
-    
   <div class="calendar-heading">
-      <button id="white-button"><%= link_to t('simple_calendar.previous', default: 'Previous Week'), calendar.url_for_previous_view %></button>
-      <span class="calendar-title">Week of <%= date_range.first.strftime("%m/%d/%Y") %> - <%= date_range.last.strftime("%m/%d/%Y") %></span>
-      <button id="white-button"><%= link_to t('simple_calendar.next', default: 'Next Week'), calendar.url_for_next_view %></button> 
-      <p> </p>
+    <%= link_to t('simple_calendar.previous', default: 'Previous'), calendar.url_for_previous_view %>
+    <span class="calendar-title"> <%= date_range.first.strftime("%m/%d/%Y") %> - <%= date_range.last.strftime("%m/%d/%Y") %></span>
+    <%= link_to t('simple_calendar.next', default: 'Next'), calendar.url_for_next_view %>
   </div>
 
-  <table class="table table-bordered">
-      
+  <table class="table table-striped">
     <thead>
-        
-<!--
-        <tr>
-        </tr>
--->
-      
-        <tr>
-            
-            <th></th>
-
-            <% date_range.slice(0, 7).each do |day| %>
-              <th><%= t('date.abbr_day_names')[day.wday] %></th>
-            <% end %>
-
-            <% date_range.each_slice(7) do |week| %>
-
-                <tr class="date-header-row">
-
-                    <th></th>
-                    <% week.each do |day| %>
-                    
-                        <%= content_tag :td, class: calendar.td_classes_for(day) do %>
-                          <% if defined?(Haml) && respond_to?(:block_is_haml?) && block_is_haml?(block) %>
-                            <% capture_haml(day, sorted_events.fetch(day, []), &block) %>
-                          <% else %>
-                            <% block.call day, sorted_events.fetch(day, []) %>
-                          <% end %>
-                        <% end %>
-                      <% end %>
-
-                </tr>
-
-            <% end %>
-        
-        </tr>
-      
+      <tr>
+        <% date_range.slice(0, 7).each do |day| %>
+          <th><%= t('date.abbr_day_names')[day.wday] %></th>
+        <% end %>
+      </tr>
     </thead>
 
     <tbody>
-        <% require 'set' %>
-        <% homepage = request.original_url.include? "welcome/homepage" %>
-        
-        <% if homepage %>
-            <% event_set = CalendarEvent.where(host: current_user.id).find_each.to_set %>
-        
-            <% group_event_set = Set.new %>
-            <% current_user.group_ids.each do |group_id| %>
-              <% if group_id == nil %>
-                <% next %>
-              <% end %>
-              <% group_events = CalendarEvent.where(group: group_id).find_each %>
-              <% group_events.each do |group_event| %>
-                <%= group_event.group %>
-                <% group_event_set.add(group_event) %>
+      <% date_range.each_slice(7) do |week| %>
+        <tr>
+          <% week.each do |day| %>
+            <%= content_tag :td, class: calendar.td_classes_for(day) do %>
+              <% if defined?(Haml) && respond_to?(:block_is_haml?) && block_is_haml?(block) %>
+                <% capture_haml(day, sorted_events.fetch(day, []), &block) %>
+              <% else %>
+                <% block.call day, sorted_events.fetch(day, []) %>
               <% end %>
             <% end %>
-        
-            <% event_set.merge(group_event_set) %>
-            <% event_list = event_set.to_a %>
-        <% else %>
-            <% event_list = [] %>
-            <% id_list = [current_user.id] %>
-        
-           <% if current_group == nil %>
-             current_group is nil.
-             Here are the group ids for the current user: <%= current_user.group_ids %>
-           <% else %>
-             <% if current_group.group_members != nil %>
-                <% current_group.group_members.each do |member| %>
-                  <% id_list.push(member) %>
-                <% end %>
-            
-            
-                <% id_list.each do |member_id| %>
-                  <% member_events = CalendarEvent.where(host: member_id).find_each %>
-                  <% member_events.each do |event| %>
-                    <% event_list.push(event) %>
-                  <% end %>
-                <% end %>
-             <% end %>
-        
-             <% group_event_list = CalendarEvent.where(group: current_group.id).find_each %>
-           <% end %>
-            
-           
-           
-        <% end %>
-
-            
-        
-        <% for i in 0..23 %>
-          <% time_range = [0,23] %>
-          <tr>
-          <% date_range.each_slice(7) do |week| %>
-              <td ><center><%=hours[i]%></center></td>
-            <% week.each do |day| %>
-              <% result = "" %>
-              <% event_list.each do |event| %>
-                  <% if day.month == get_month(event.month)  && day.year == event.year.to_i%>
-                      <% result = event.print_event(day.day.to_i,i,event) %>
-                      <% if result != "" %>
-                        <% if homepage %>
-                          <td style="background-color: #c9dbe8;"><%= link_to result, edit_calendar_event_path(event.id) %></td>
-                        <% else %>
-                          <td id="not-available"></td>
-                        <% end %>
-              
-                        <% break %>
-                      <% end %>
-                  <% end %>
-              <% end %>
-              <% if result == "" %>
-                <% found_events = [] %>
-                <% if homepage %>
-                  <% id_list = [current_user.id] %>
-                <% end %>
-                
-                <% id_list.each do |member_id| %>
-
-                  <% events_today = CalendarEvent.where(["year = ? and month = ? and day = ? and host = ?",day.year.to_s, get_month(day.month.to_i),day.day.to_s,member_id]).find_each %>
-
-                  <% events_today.each do |event| %>
-                    <% found_events.push(event) %>
-                  <% end %>
-                <% end %>
-
-                <% time_range = get_time_range(found_events) %>
-
-                <% if homepage %>
-              
-                  <% if i >= time_range.first && i < time_range.last %>
-                    <td class="taken"></td>
-                  <% elsif time_range.first == time_range.last && time_range.first == 0 %>
-                    <td class="taken"></td>
-                  <% elsif i >= time_range.first && time_range.last==23 %>
-                    <td class="taken"></td>
-                  <% elsif time_range.first == -1 && time_range.last == -1 %>
-                    <td></td>
-                  <% else %>
-                    <td></td>
-                  <% end %>
-              
-                <% elsif i >= time_range.first && i < time_range.last %>
-                  <td id="not-available"></td>
-                <% elsif time_range.first == time_range.last && time_range.first == 0 %>
-                  <td>not available 3</td>
-                <% elsif i >= time_range.first && time_range.last==23 %>
-                  <td id="not-available"></td>
-                <% elsif time_range.first == -1 && time_range.last == -1 %>
-                  <td id="available">
-<!--                      <button></button>-->
-                  </td>
-                <% else %>
-                  <td id="available">
-<!--                      <button></button>-->
-                  </td>
-                <% end %>
-              <% end %>
           <% end %>
-            
-          </tr>
-        
-<!--
-            <tr>
-                  <td></td>
-                  <% for j in 0..6 %>
-                    <td></td>
-                  <% end %>
-            </tr>
--->
-        
-        
-        <% end %>
-        
+        </tr>
       <% end %>
     </tbody>
-      
   </table>
-    
 </div>
