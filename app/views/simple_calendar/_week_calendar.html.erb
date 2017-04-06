@@ -10,11 +10,7 @@
   <table class="table table-bordered">
       
     <thead>
-        
-<!--
-        <tr>
-        </tr>
--->
+
       
         <tr>
             
@@ -51,13 +47,31 @@
     <tbody>
         <% require 'set' %>
         <% require 'algorithm_helper.rb' %>
+        <% require 'months_conversion_helper.rb' %>
         <% homepage = request.original_url.include? "welcome/homepage" %>
+        <% time_slots = request.original_url.include? "time_slots_lists?group" %>
+        <% event_list = [] %>
         
         <!-- If the current page is the homepage -->
         <% if homepage %>
             <% event_list = all_events(current_user.id).to_a %>
         <% else %>
-            <% event_list = CalendarEvent.where(:group => group_id).find_each %>
+            <% if current_group == nil %>
+              current_group is nil.
+              Here are the group ids for the current user: <%= current_user.group_ids %>
+              
+            <% else %>
+              <% group_event_list = CalendarEvent.where(:group => current_group.id).find_each.to_a %>
+              
+              <% event_list = [] %>
+              <% sub_list = [] %>
+              <% current_group.group_members.each do |user_id| %>
+                <% sub_list = all_events(user_id).to_a %>
+                <% sub_list.each do |event| %>
+                  <% event_list.push(event) %>
+                <% end %>
+              <% end %>
+            <% end %>
         <% end %>
             
         <% hours = ['12:00 am','1:00 am','2:00 am',
@@ -69,33 +83,80 @@
                 '6:00 pm', '7:00 pm', '8:00 pm',
                 '9:00 pm', '10:00 pm', '11:00 pm']  %>
       
+        <% nums_to_months = {1 => "January", 2 => "February", 3 => "March", 4 => "April", 5 => "May", 6 => "June", 7 => "July", 8 => "August", 9 => "September", 10 => "October", 11 => "November", 12 => "December"} %>
+  
+        <% months_to_nums = {"January" => 1, "February" => 2, "March" => 3, "April" => 4, "May" => 5, "June" => 6, "July" => 7, "August" => 8, "September" => 9, "October" => 10, "November" => 11, "December" => 12} %>
+       
         <% for i in 0..23 %>
+          
           <% time_range = [0,23] %>
           <tr>
           <% date_range.each_slice(7) do |week| %>
               <td ><center><%=hours[i]%></center></td>
             <% week.each do |day| %>
               <% result = "" %>
-              <% event_list.each do |event| %>
-                  <% if day.month == get_month(event.month) and day.year == event.year.to_i%>
-                      <% result = event.print_event(day.day.to_i,i,event) %>
-                      <% if result != "" %>
-                        <% if homepage %>
-                          
-                          
-                          <td style="background-color: #c9dbe8;"><%= link_to result, edit_calendar_event_path(event.id) %></td>
-                        <% else %>
-                          <td id="not-available"></td>
-                        <% end %>
               
-                        <% break %>
+              <% if not homepage %>
+                <% group_event_list.each do |group_event| %>
+                      <% check = group_event.month.to_i %>
+                      <% if check == 0 %>
+                        <% month = months_to_nums[group_event.month] %>
+                      <% else %>
+                        <% month = check %>
+                      <% end %>
+
+                      <% if day.month == month and day.year == group_event.year.to_i%>
+
+                          <% result = group_event.print_event(day.day.to_i,i,group_event) %>
+
+                          <% if result != "" %>
+                              <td style="background-color: #c9dbe8;"><%= link_to result, edit_calendar_event_path(group_event.id) %></td>
+                            <% break %>
+                          <% end %>
                       <% end %>
                   <% end %>
               <% end %>
+              
+              <% if result == "" %>
+                
+                <% event_list.each do |event| %>
+                    <% check = event.month.to_i %>
+                    <% if check == 0 %>
+                      <% month = months_to_nums[event.month] %>
+                    <% else %>
+                      <% month = check %>
+                    <% end %>
+
+                    <% if day.month == month and day.year == event.year.to_i%>
+
+                        <% result = event.print_event(day.day.to_i,i,event) %>
+
+                        <% if result != "" %>
+                          <% if homepage %>
+
+                            <td style="background-color: #c9dbe8;"><%= link_to result, edit_calendar_event_path(event.id) %></td>
+                          <% elsif time_slots %>
+                            <td id="not-available"></td>
+                          <% else %>
+                            <td style="taken"></td>
+
+                          <% end %>
+
+                          <% break %>
+                        <% end %>
+                    <% end %>
+                <% end %>
+              <% end %>
+              
+              
+
+            
               <% if result == "" %>
                 <% found_events = [] %>
                 <% if homepage %>
                   <% id_list = [current_user.id] %>
+                <% else %>
+                  <% id_list = current_group.group_members %>
                 <% end %>
                 
                 <% id_list.each do |member_id| %>
@@ -108,35 +169,58 @@
                 <% end %>
 
                 <% time_range = get_time_range(found_events) %>
+                <% if not homepage %>
+                  <% group_events_today = [] %>
+                  <% group_event_list.each do |group_event| %>
+                    <% check = group_event.month.to_i %>
+                      <% if check == 0 %>
+                        <% month = months_to_nums[group_event.month] %>
+                      <% else %>
+                        <% month = check %>
+                      <% end %>
+                        
+                  
+                      
+                      
+                      <% if day.month == month and day.year == group_event.year.to_i and day.day.to_i == group_event.day.to_i%>
+            
+                        <% group_events_today.push(group_event) %>
+            
+                      <% end %>
+                  <% end %>
+                  <% group_time_range = get_time_range(group_events_today) %>
+                  
+                <% end %>
 
                 <% if homepage %>
-              
-                  <% if i >= time_range.first && i < time_range.last %>
+                  <% if time_range.include?(i) %>
                     <td class="taken"></td>
-                  <% elsif time_range.first == time_range.last && time_range.first == 0 %>
-                    <td class="taken"></td>
-                  <% elsif i >= time_range.first && time_range.last==23 %>
-                    <td class="taken"></td>
-                  <% elsif time_range.first == -1 && time_range.last == -1 %>
-                    <td></td>
                   <% else %>
                     <td></td>
                   <% end %>
               
-                <% elsif i >= time_range.first && i < time_range.last %>
-                  <td id="not-available"></td>
-                <% elsif time_range.first == time_range.last && time_range.first == 0 %>
-                  <td>not available 3</td>
-                <% elsif i >= time_range.first && time_range.last==23 %>
-                  <td id="not-available"></td>
-                <% elsif time_range.first == -1 && time_range.last == -1 %>
-                  <td id="available">
-<!--                      <button></button>-->
-                  </td>
+                <% elsif time_slots %>
+            
+                  
+                 
+                  <% if group_time_range.include?(i) %>
+                    <td style="background-color: #c9dbe8;"></td>
+                  <% elsif time_range.include?(i) %>
+                    <td id="not-available"></td>
+                  <% else %>
+                    <td></td>
+                  <% end %>
+
+            
                 <% else %>
-                  <td id="available">
-<!--                      <button></button>-->
-                  </td>
+                  <% if group_time_range.include?(i) %>
+                    <td style="background-color: #c9dbe8;"></td>
+                  <% elsif time_range.include?(i) %>
+                    <td></td>
+                  <% else %>
+                    <td></td>
+                  <% end %>
+                
                 <% end %>
               <% end %>
           <% end %>
