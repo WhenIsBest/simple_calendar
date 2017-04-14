@@ -159,18 +159,27 @@
                   <% id_list = current_group.group_members %>
                 <% end %>
                 
+                
                 <% id_list.each do |member_id| %>
-
-                  <% events_today = CalendarEvent.where(["year = ? and month = ? and day = ? and host = ?",day.year.to_s, get_month(day.month.to_i),day.day.to_s,member_id]).find_each %>
-
-                  <% events_today.each do |event| %>
-                    <% found_events.push(event) %>
+                  
+                  <% if homepage %>
+                    <% events_today = CalendarEvent.where(:group => nil, :host => current_user.id, :year => day.year.to_s, :month => get_month(day.month.to_i), :day => day.day.to_s) %>
+                  <% else %>
+                    <% events_today = CalendarEvent.where(:group => current_group.id, :year => day.year.to_s, :month => get_month(day.month.to_i), :day => day.day.to_s) %>
+                    
+                  <% end %>
+                  <% if events_today %>
+                    <% found_events = events_today.to_a %>
+                    <% found_events.each do |event| %>
+                      <% puts event.name %>
+                    <% end %>
                   <% end %>
                 <% end %>
-
+                
                 <% time_range = get_time_range(found_events) %>
                 <% if not homepage %>
                   <% group_events_today = [] %>
+                  
                   <% group_event_list.each do |group_event| %>
                     <% check = group_event.month.to_i %>
                       <% if check == 0 %>
@@ -193,6 +202,7 @@
                 <% end %>
 
                 <% if homepage %>
+             
                   <% if time_range.include?(i) %>
                     <td class="taken"></td>
                   <% else %>
@@ -213,6 +223,7 @@
 
             
                 <% else %>
+                  
                   <% if group_time_range.include?(i) %>
                     <td style="background-color: #c9dbe8;"></td>
                   <% elsif time_range.include?(i) %>
