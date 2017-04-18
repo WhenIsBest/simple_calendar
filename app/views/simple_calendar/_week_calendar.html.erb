@@ -55,6 +55,7 @@
         <!-- If the current page is the homepage -->
         <% if homepage %>
             <% event_list = all_events(current_user.id).to_a %>
+            
         <% else %>
             <% if current_group == nil %>
               current_group is nil.
@@ -110,7 +111,13 @@
                           <% result = group_event.print_event(day.day.to_i,i,group_event) %>
 
                           <% if result != "" %>
-                              <td style="background-color: #c9dbe8;"><%= link_to result, edit_calendar_event_path(group_event.id) %></td>
+                              <td style="background-color: #c9dbe8;">
+                                <% if group_event.host == current_user.id.to_s %>
+                                  <%= link_to result, edit_calendar_event_path(group_event.id) %>
+                                <% else %>
+                                  <%= result %>
+                                <% end %>
+                              </td>
                             <% break %>
                           <% end %>
                       <% end %>
@@ -118,7 +125,7 @@
               <% end %>
               
               <% if result == "" %>
-                
+            
                 <% event_list.each do |event| %>
                     <% check = event.month.to_i %>
                     <% if check == 0 %>
@@ -126,15 +133,23 @@
                     <% else %>
                       <% month = check %>
                     <% end %>
+            
+                  
 
                     <% if day.month == month and day.year == event.year.to_i%>
 
                         <% result = event.print_event(day.day.to_i,i,event) %>
-
+                        
                         <% if result != "" %>
                           <% if homepage %>
 
-                            <td style="background-color: #c9dbe8;"><%= link_to result, edit_calendar_event_path(event.id) %></td>
+                            <td style="background-color: #c9dbe8;">
+                              <% if event.host == current_user.id.to_s %>
+                                <%= link_to result, edit_calendar_event_path(event.id) %>
+                              <% else %>
+                                <%= result %>
+                              <% end %>
+                            </td>
                           <% elsif time_slots %>
                             <td id="not-available"></td>
                           <% else %>
@@ -170,9 +185,7 @@
                   <% end %>
                   <% if events_today %>
                     <% found_events = events_today.to_a %>
-                    <% found_events.each do |event| %>
-                      <% puts event.name %>
-                    <% end %>
+                    
                   <% end %>
                 <% end %>
                 
@@ -182,22 +195,23 @@
                   
                   <% group_event_list.each do |group_event| %>
                     <% check = group_event.month.to_i %>
-                      <% if check == 0 %>
-                        <% month = months_to_nums[group_event.month] %>
-                      <% else %>
-                        <% month = check %>
-                      <% end %>
-                        
-                  
-                      
-                      
-                      <% if day.month == month and day.year == group_event.year.to_i and day.day.to_i == group_event.day.to_i%>
-            
-                        <% group_events_today.push(group_event) %>
-            
-                      <% end %>
+                    <% if check == 0 %>
+                      <% month = months_to_nums[group_event.month] %>
+                    <% else %>
+                      <% month = check %>
+                    <% end %>
+
+
+
+
+                    <% if day.month == month and day.year == group_event.year.to_i and day.day.to_i == group_event.day.to_i%>
+
+                      <% group_events_today.push(group_event) %>
+
+                    <% end %>
                   <% end %>
                   <% group_time_range = get_time_range(group_events_today) %>
+             
                   
                 <% end %>
 
