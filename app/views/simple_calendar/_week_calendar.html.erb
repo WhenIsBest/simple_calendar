@@ -176,16 +176,54 @@
                 
                 
                 <% id_list.each do |member_id| %>
-                  
+                 
                   <% if homepage %>
-                    <% events_today = CalendarEvent.where(:group => nil, :host => current_user.id, :year => day.year.to_s, :month => get_month(day.month.to_i), :day => day.day.to_s) %>
+                    <% events_today = CalendarEvent.where(:group => nil, :host => current_user.id, :year => day.year.to_s, :month => get_month(day.month), :day => day.day.to_s) %>
+                    <% group_list = current_user.group_ids %>
+                    <% group_list.each do |group| %>
+                      <% check = day.month.to_i %>
+                      <% if check == 0 %>
+                        <% check = day.month %>
+                        <% second_check = months_to_nums[day.month] %>
+                      <% else %>
+                        <% second_check = nums_to_months[check] %>
+                      <% end %>
+                      <% puts "#{day.day.to_s} #{check.to_s} #{day.year.to_s}" %>
+                      <% puts "#{check.to_s} #{second_check.to_s}" %>
+                      <% test_group = CalendarEvent.where(:group => group, :year => day.year.to_s, :month => check.to_s, :day => day.day.to_s) %>
+                      <% test_group2 = CalendarEvent.where(:group => group, :year => day.year.to_s, :month => second_check.to_s, :day => day.day.to_s) %>
+                      <% puts "1 #{test_group.length}" %>
+                      <% puts "2 #{test_group2.length}" %>
+                      <% if test_group.each %>
+                        <% test_group.each do |test| %>
+                          <% puts test.name %>
+                          <% puts test.year %>
+                          <% puts test.month %>
+                          <% puts test.day %>
+                        <% end %>
+                      <% end %>
+                      <% if test_group2.each %>
+                        <% test_group2.each do |test| %>
+                          <% puts test.name %>
+                          <% puts test.year %>
+                          <% puts test.month %>
+                          <% puts test.day %>
+                        <% end %>
+                      <% end %>
+                      
+                      
+                      <% puts "Before #{events_today.length}" %>
+                      <% events_today = test_group.to_a %>
+                      <% events_today2 = test_group2.to_a %>
+                      <% events_today = events_today + events_today2 %>
+                      <% puts "After #{events_today.length}" %>
+                    <% end %>
                   <% else %>
-                    <% events_today = CalendarEvent.where(:group => current_group.id, :year => day.year.to_s, :month => get_month(day.month.to_i), :day => day.day.to_s) %>
-                    
+                    <% events_today = CalendarEvent.where(:group => current_group.id, :year => day.year.to_s, :month => get_month(day.month), :day => day.day.to_s) %>
                   <% end %>
                   <% if events_today %>
                     <% found_events = events_today.to_a %>
-                    
+                    <% puts found_events.length %>
                   <% end %>
                 <% end %>
                 
