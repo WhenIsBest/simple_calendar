@@ -87,10 +87,30 @@
         <% nums_to_months = {1 => "January", 2 => "February", 3 => "March", 4 => "April", 5 => "May", 6 => "June", 7 => "July", 8 => "August", 9 => "September", 10 => "October", 11 => "November", 12 => "December"} %>
   
         <% months_to_nums = {"January" => 1, "February" => 2, "March" => 3, "April" => 4, "May" => 5, "June" => 6, "July" => 7, "August" => 8, "September" => 9, "October" => 10, "November" => 11, "December" => 12} %>
+      
+        <% if homepage and current_user and current_user.start_time and current_user.end_time %>
+          <% start_time = current_user.start_time %>
+          <% end_time = current_user.end_time %>
+      
+          <% if current_user.start_md == "PM" and start_time < 12 %>
+            <% start_time = start_time + 12 %>
+          <% elsif current_user.start_md == "AM" and start_time == 12 %>
+            <% start_time = 0 %>
+          <% end %>
+        
+          <% if current_user.end_md == "PM" and end_time < 12 %>
+            <% end_time = end_time + 12 %>
+          <% elsif current_user.end_md == "AM" and end_time == 12 %>
+            <% end_time = 0 %>
+          <% end %>
+        <% else %>
+          <% start_time = 0 %>
+          <% end_time = 23 %>
+        <% end %>
        
-        <% for i in 0..23 %>
+        <% for i in start_time..end_time-1 %>
           
-          <% time_range = [0,23] %>
+          <% time_range = [start_time,end_time] %>
           <tr>
           <% date_range.each_slice(7) do |week| %>
               <td ><center><%=hours[i]%></center></td>
@@ -113,7 +133,7 @@
                           <% if result != "" %>
                               <td style="background-color: #c9dbe8;">
                                 <% if group_event.host == current_user.id.to_s %>
-                                  <%= link_to result, edit_calendar_event_path(group_event.id) %>
+                                  <%= link_to result, edit_calendar_event_path(group_event.id, :group => current_group.id) %>
                                 <% else %>
                                   <%= result %>
                                 <% end %>
@@ -142,14 +162,34 @@
                         
                         <% if result != "" %>
                           <% if homepage %>
-
-                            <td style="background-color: #c9dbe8;">
-                              <% if event.host == current_user.id.to_s %>
-                                <%= link_to result, edit_calendar_event_path(event.id) %>
+                            <% if current_user.start_time %>
+                              <% if i >= start_time and i < end_time %>
+                                
+                                <td style="background-color: #c9dbe8;">
+                                  <% if event.host == current_user.id.to_s %>
+                                    <%= link_to result, edit_calendar_event_path(event.id) %>
+                                  <% else %>
+                                    <%= result %>
+                                  <% end %>
+                                </td>
                               <% else %>
-                                <%= result %>
+                                <td style="background-color: #d3d3d3;">
+                                  <% if event.host == current_user.id.to_s %>
+                                    <%= link_to result, edit_calendar_event_path(event.id) %>
+                                  <% else %>
+                                    <%= result %>
+                                  <% end %>
+                                </td>
                               <% end %>
-                            </td>
+                            <% else %>
+                              <td style="background-color: #c9dbe8;">
+                                  <% if event.host == current_user.id.to_s %>
+                                    <%= link_to result, edit_calendar_event_path(event.id) %>
+                                  <% else %>
+                                    <%= result %>
+                                  <% end %>
+                                </td>
+                            <% end %>
                           <% elsif time_slots %>
                             <td id="not-available"></td>
                           <% else %>
@@ -188,42 +228,26 @@
                       <% else %>
                         <% second_check = nums_to_months[check] %>
                       <% end %>
-                      <% puts "#{day.day.to_s} #{check.to_s} #{day.year.to_s}" %>
-                      <% puts "#{check.to_s} #{second_check.to_s}" %>
+                      
                       <% test_group = CalendarEvent.where(:group => group, :year => day.year.to_s, :month => check.to_s, :day => day.day.to_s) %>
                       <% test_group2 = CalendarEvent.where(:group => group, :year => day.year.to_s, :month => second_check.to_s, :day => day.day.to_s) %>
-                      <% puts "1 #{test_group.length}" %>
-                      <% puts "2 #{test_group2.length}" %>
-                      <% if test_group.each %>
-                        <% test_group.each do |test| %>
-                          <% puts test.name %>
-                          <% puts test.year %>
-                          <% puts test.month %>
-                          <% puts test.day %>
-                        <% end %>
-                      <% end %>
-                      <% if test_group2.each %>
-                        <% test_group2.each do |test| %>
-                          <% puts test.name %>
-                          <% puts test.year %>
-                          <% puts test.month %>
-                          <% puts test.day %>
-                        <% end %>
-                      <% end %>
                       
+
                       
-                      <% puts "Before #{events_today.length}" %>
-                      <% events_today = test_group.to_a %>
+                      <% events_today = events_today.to_a + test_group.to_a %>
                       <% events_today2 = test_group2.to_a %>
                       <% events_today = events_today + events_today2 %>
-                      <% puts "After #{events_today.length}" %>
                     <% end %>
                   <% else %>
                     <% events_today = CalendarEvent.where(:group => current_group.id, :year => day.year.to_s, :month => get_month(day.month), :day => day.day.to_s) %>
+                    <% events_today2 = CalendarEvent.where(:group => current_group.id, :year => day.year.to_s, :month => day.month, :day => day.day.to_s) %>
+                    <% events_today = events_today.to_a + events_today2.to_a %>
                   <% end %>
                   <% if events_today %>
                     <% found_events = events_today.to_a %>
-                    <% puts found_events.length %>
+                    <% found_events.each do |event| %>
+                      <% puts event %>
+                    <% end %>
                   <% end %>
                 <% end %>
                 
@@ -245,7 +269,7 @@
                     <% if day.month == month and day.year == group_event.year.to_i and day.day.to_i == group_event.day.to_i%>
 
                       <% group_events_today.push(group_event) %>
-
+                      
                     <% end %>
                   <% end %>
                   <% group_time_range = get_time_range(group_events_today) %>
@@ -254,8 +278,13 @@
                 <% end %>
 
                 <% if homepage %>
-             
-                  <% if time_range.include?(i) %>
+                  <% if current_user.start_time %>
+                    <% if i >= start_time and i < end_time %>
+                      <td class="taken"></td>
+                    <% else %>  
+                      <td style="background-color: #d3d3d3;"></td>
+                    <% end %>
+                  <% elsif time_range.include?(i) %>
                     <td class="taken"></td>
                   <% else %>
                     <td></td>
